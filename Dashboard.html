@@ -5,7 +5,22 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<div class="stats">
+  <div class="stat-card">
+    <h3 id="users">0</h3>
+    <p>Total Users</p>
+  </div>
+  <div class="stat-card">
+    <h3 id="orders">0</h3>
+    <p>Total Orders</p>
+  </div>
+  <div class="stat-card">
+    <h3>$<span id="wallet">100</span></h3>
+    <p>Wallet Balance</p>
+  </div>
+</div>
 
+<button onclick="addMoney()">Add $10</button>
 <div class="sidebar">
   <h3>GreenOTP</h3>
   <a href="#">Dashboard</a>
@@ -37,7 +52,7 @@
   <button class="glow">Buy OTP</button>
 
 </div>
-
+<a href="#" class="telegram-btn">Telegram</a>
 <script src="js/script.js"></script>
 </body>
 </html>
